@@ -7,7 +7,9 @@ const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
 app.use(express.json()); // Data from the body is added to the request object
 app.use((req, res, next) => {
     console.log('MIDDLEWARE');
