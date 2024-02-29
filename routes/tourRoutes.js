@@ -3,11 +3,11 @@ const tourController = require('../controllers/tourController')
 
 const router = express.Router();
 
-router.param('id', tourController.checkID); // Middleware to check for valid id
+//router.param('id', tourController.checkID); // Middleware to check for valid id
 
 router.route('/')
     .get(tourController.getTours)
-    .post(tourController.checkBody, tourController.createTour)
+    .post(tourController.createTour)
 
 router.route('/:id')
     .get(tourController.getTour)
