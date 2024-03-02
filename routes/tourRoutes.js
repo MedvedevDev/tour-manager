@@ -6,7 +6,7 @@ const router = express.Router();
 //router.param('id', tourController.checkID); // Middleware to check for valid id
 
 router.route('/')
-    .get(tourController.getTours)
+    .get(tourController.getAllTours)
     .post(tourController.createTour)
 
 router.route('/:id')
