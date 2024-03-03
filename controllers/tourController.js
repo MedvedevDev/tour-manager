@@ -26,20 +26,37 @@ exports.getAllTours = async (req, res) => {
         //     .where('difficulty').equals('easy')
 
         // BUILD QUERY
-        // 1) Filtering
+        // 1.A) Filtering
         const queryObj = {
             ...req.query
         };
         const excludedFields = ['page', 'sort', 'limit', 'fields'];
         excludedFields.forEach(el => delete queryObj[el]); // deleting excludedFields from queryObj array
 
-        // 2) Advanced Filtering
+        // 1.B) Advanced Filtering
         let queryString = JSON.stringify(queryObj);
         queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
 
         // {difficulty: 'easy', duration: { $gte: 5 }}
         // {difficulty: 'easy', duration: { gte: '5' }}
-        const query = Tour.find(JSON.parse(queryString));
+        let query = Tour.find(JSON.parse(queryString)); // Tour.find returns a query and we store it into the variable
+
+        // 2) SORTING
+        if (req.query.sort) {
+            // mongoose method - sort('price ratingsAverage')
+            let sortBy = req.query.sort.split(',').join(' ')
+            query = query.sort(sortBy);
+        } else {
+            query = query.sort('-createdAt');
+        }
+
+        // 3) LIMIT OUTPUT FIELDS
+        if (req.query.fields) {
+            const fields = req.query.fields.split(',').join(' ');
+            query = query.select(fields);
+        } else {
+            query = query.select('-__v'); // exclude '__v' field
+        }
 
         // EXECUTE QUERY
         const tours = await query;

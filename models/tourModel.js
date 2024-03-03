@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const {flatten} = require("express/lib/utils");
 
 //Create schema
 const tourSchema = new mongoose.Schema({
@@ -49,7 +50,9 @@ const tourSchema = new mongoose.Schema({
     images: [String], // array of images
     createdAt: {
         type: Date,
-        default: Date.now()
+        default: Date.now(),
+        // if you need to always hide some field (can be made for any other field), for example 'createdAt' field - select: false
+        select: false
     },
     startDates: [Date] // array of dates
 });
