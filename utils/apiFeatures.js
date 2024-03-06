@@ -6,7 +6,7 @@ class APIFeatures {
 
     filter() {
         const queryObj = {
-            ...this.query
+            ...this.queryString
         };
         const excludedFields = ['page', 'sort', 'limit', 'fields'];
         excludedFields.forEach(el => delete queryObj[el]); // deleting excludedFields from queryObj array
@@ -26,7 +26,7 @@ class APIFeatures {
     sort() {
         if (this.queryString.sort) {
             // mongoose method - sort('price ratingsAverage')
-            let sortBy = this.queryString.sort.split(',').join(' ')
+            const sortBy = this.queryString.sort.split(',').join(' ')
             this.query = this.query.sort(sortBy);
         } else {
             this.query = this.query.sort('-createdAt');
@@ -35,7 +35,7 @@ class APIFeatures {
     }
 
     limitFields() {
-        if (this.queryString) {
+        if (this.queryString.fields) {
             const fields = this.queryString.fields.split(',').join(' ');
             this.query = this.query.select(fields);
         } else {
