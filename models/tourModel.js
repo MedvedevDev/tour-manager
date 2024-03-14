@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
-const {flatten} = require("express/lib/utils");
+const slugify = require('slugify')
 
-//Create schema
+// Create schema
 const tourSchema = new mongoose.Schema({
     // name: String,
     name: {
@@ -54,18 +54,35 @@ const tourSchema = new mongoose.Schema({
         // if you need to always hide some field (can be made for any other field), for example 'createdAt' field - select: false
         select: false
     },
-    startDates: [Date] // array of dates
+    startDates: [Date], // array of dates
+    slug: String
 }, {
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
 
-// Virtual property - Tour duration in weeks
+// VIRTUAL PROPERTY - Tour duration in weeks
 tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 }) // get() - getter
 
-//Create model
+// DOCUMENT MIDDLEWARE: runs before document is .save() and .create()
+tourSchema.pre('save', function (next) {
+    this.slug = slugify(this.name, {lower:true});
+    next(); // to call next middleware
+})
+
+tourSchema.pre('save', function (next) {
+    console.log('Saving document...');
+    next();
+})
+
+// tourSchema.post('save', function (doc, next) {
+//     console.log(doc)
+//     next(); // to call next middleware
+// })
+
+// Create model
 const Tour = new mongoose.model('Tour', tourSchema);
 
 module.exports = Tour;
