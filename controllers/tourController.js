@@ -82,11 +82,11 @@ exports.updateTour = async (req, res) => {
         res.status(200).json({
             status: 'success',
             data: {
-                updatedTour: tour
+                tour
             }
         })
     } catch (err) {
-        res.send(400).json({
+        res.send(404).json({
             status: 'failed',
             message: err
         })
