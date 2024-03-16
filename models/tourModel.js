@@ -95,8 +95,15 @@ tourSchema.pre(/^find/, function (next) { // exclude from getAll query all the d
 })
 
 tourSchema.post(/^find/, function (docs, next) {
-    console.log(docs);
+    //console.log(docs);
     next();
+})
+
+// AGGREGATION MIDDLEWARE
+tourSchema.pre('aggregate',function (next) {
+    this.pipeline().unshift({ $match: { secretTour: {$ne: true} } }); // to filter out a secret tours
+    console.log(this.pipeline());
+    next()
 })
 
 // Create model
