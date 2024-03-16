@@ -55,6 +55,10 @@ const tourSchema = new mongoose.Schema({
         select: false
     },
     startDates: [Date], // array of dates
+    secretTour: {
+        type: Boolean,
+        default: false
+    },
     slug: String
 }, {
     toJSON: { virtuals: true },
@@ -66,7 +70,7 @@ tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 }) // get() - getter
 
-// DOCUMENT MIDDLEWARE: runs before document is .save() and .create()
+// DOCUMENT MIDDLEWARE: runs before document is .save(), .create(), .remove()...
 tourSchema.pre('save', function (next) {
     this.slug = slugify(this.name, {lower:true});
     next(); // to call next middleware
@@ -81,6 +85,19 @@ tourSchema.pre('save', function (next) {
 //     console.log(doc)
 //     next(); // to call next middleware
 // })
+
+// QUERY MIDDLEWARE: runs on .find()
+tourSchema.pre(/^find/, function (next) { // exclude from getAll query all the documents (tours) where prop 'secretTour' !== 'true'
+    // /^find/ ---- all the strings that start with 'find'
+    // tourSchema.pre('find', function (next) {
+    this.find({ secretTour: {$ne: true} })
+    next();
+})
+
+tourSchema.post(/^find/, function (docs, next) {
+    console.log(docs);
+    next();
+})
 
 // Create model
 const Tour = new mongoose.model('Tour', tourSchema);
