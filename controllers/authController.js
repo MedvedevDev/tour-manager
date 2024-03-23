@@ -1,7 +1,9 @@
+const { promisify } = require('util')
 const jwt = require('jsonwebtoken')
 const User = require('./../models/userModel')
 const catchAsync = require('./../utils/catchAsync')
 const AppError = require('./../utils/appError')
+const { log } = require('console')
 
 // Create token function
 const createToken = id => {
@@ -47,4 +49,34 @@ exports.login = catchAsync(async (req, res, next) => {
         status: 'success',
         token
     })
+})
+
+// Middleware to protect access from users that are not logged in
+exports.protect = catchAsync(async (req, res, next) => {
+    let token;
+    // Get a token and check if it`s there
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+        return next(new AppError('Not logged in!', 401));
+    }
+
+    // Verification token
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    // Check if user still exists
+    const freshUser = await User.findById(decoded.id);
+    if (!freshUser) {
+        return next(new AppError('The user belonging to this token does no longer exists'), 401);
+    }
+
+    // Check if user changed password after token was issued
+    if(freshUser.changedPasswordAfter(decoded.iat)) {
+        return next(new AppError('User recently changed password!', 401));
+    }
+
+    req.user = freshUser;
+    next();
 })
