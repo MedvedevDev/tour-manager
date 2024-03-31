@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
+const crypto = require('crypto')
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -37,7 +38,9 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'user', 'guide', 'lead-guide'],
         default: 'user'
     },
-    passwordChangetAt: Date     
+    passwordChangetAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date
 })
 
 // Password encryption (hashing) in pre-save middleware
@@ -61,6 +64,17 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
     }
 
     return false;   
+}
+
+// Password reset token method
+userSchema.methods.createPasswordResetToken = function() {
+    const resetToken = crypto.randomBytes(32).toString('hex'); //32 - number of characters
+    
+    this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+    return resetToken;
 }
 
 const User = mongoose.model('User', userSchema);
